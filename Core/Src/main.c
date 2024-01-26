@@ -68,7 +68,7 @@ void modbusMasterReception(void const * argument);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-uint8_t buffer[11];
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -125,11 +125,11 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of modbusMastertas */
-  osThreadDef(modbusMastertas, modbusMasterSend, osPriorityIdle, 0, 128);
+  osThreadDef(modbusMastertas, modbusMasterSend, osPriorityNormal, 0, 128);
   modbusMastertasHandle = osThreadCreate(osThread(modbusMastertas), NULL);
 
   /* definition and creation of modbusMaster */
-  osThreadDef(modbusMaster, modbusMasterReception, osPriorityIdle, 0, 128);
+  osThreadDef(modbusMaster, modbusMasterReception, osPriorityNormal, 0, 128);
   modbusMasterHandle = osThreadCreate(osThread(modbusMaster), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -303,6 +303,8 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+
+
     osDelay(1);
   }
   /* USER CODE END 5 */
@@ -319,19 +321,23 @@ void modbusMasterSend(void const * argument)
 {
   /* USER CODE BEGIN modbusMasterSend */
   /* Infinite loop */
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-	if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
+	for(;;)
+	{
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+				osDelay(1000);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+				osDelay(1000);
+
+		osDelay(1);
+	}
+	/*if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
 		for (int i = 0; i < 8; i++){
 			HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
 			osDelay(1);
 		}
 		osDelay(4);
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		osDelay(500);
-	}
-
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);*/
   /* USER CODE END modbusMasterSend */
 }
 
@@ -346,21 +352,19 @@ void modbusMasterReception(void const * argument)
 {
   /* USER CODE BEGIN modbusMasterReception */
   /* Infinite loop */
-	if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
-		for (int i = 0; i < 8; i++){
-			HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
+	for(;;)
+		{
+
+
+
 			osDelay(1);
 		}
-		osDelay(4);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-	}
   /* USER CODE END modbusMasterReception */
 }
 
 /**
   * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
+  * @note   This function is called  when TIM3 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
   * a global variable "uwTick" used as application time base.
   * @param  htim : TIM handle
@@ -371,7 +375,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
+  if (htim->Instance == TIM3) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */

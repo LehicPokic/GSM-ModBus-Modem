@@ -298,15 +298,18 @@ void StartDefaultTask(void const * argument)
 * @retval None
 */
 /* USER CODE END Header_modbusMaster */
+
+uint8_t buffer[8];
+
 void modbusMaster(void const * argument)
 {
-  /* USER CODE BEGIN modbusMaster */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END modbusMaster */
+
+	for (int i = 0; i < 8; i++){
+		HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
+		osDelay(1);
+	}
+	osDelay(4);
+   /* USER CODE END modbusMaster */
 }
 
 /**

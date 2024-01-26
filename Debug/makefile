@@ -88,8 +88,8 @@ all: main-build
 main-build: GSM-Modbus-Modem.elf secondary-outputs
 
 # Tool invocations
-GSM-Modbus-Modem.elf GSM-Modbus-Modem.map: $(OBJS) $(USER_OBJS) C:\STM(BluePill)\GSM-Modbus-Modem\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "GSM-Modbus-Modem.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\STM(BluePill)\GSM-Modbus-Modem\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="GSM-Modbus-Modem.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+GSM-Modbus-Modem.elf GSM-Modbus-Modem.map: $(OBJS) $(USER_OBJS) C:\STM(BluePill)\GSM-ModBus-Modem\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "GSM-Modbus-Modem.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\STM(BluePill)\GSM-ModBus-Modem\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="GSM-Modbus-Modem.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

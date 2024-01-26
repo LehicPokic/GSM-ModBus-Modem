@@ -46,6 +46,7 @@ UART_HandleTypeDef huart2;
 
 osThreadId defaultTaskHandle;
 osThreadId modbusMastertasHandle;
+osThreadId modbusMasterHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -56,7 +57,8 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void const * argument);
-void modbusMaster(void const * argument);
+void modbusMasterSend(void const * argument);
+void modbusMasterReception(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -66,7 +68,7 @@ void modbusMaster(void const * argument);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-
+uint8_t buffer[11];
 /**
   * @brief  The application entry point.
   * @retval int
@@ -123,8 +125,12 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of modbusMastertas */
-  osThreadDef(modbusMastertas, modbusMaster, osPriorityIdle, 0, 128);
+  osThreadDef(modbusMastertas, modbusMasterSend, osPriorityIdle, 0, 128);
   modbusMastertasHandle = osThreadCreate(osThread(modbusMastertas), NULL);
+
+  /* definition and creation of modbusMaster */
+  osThreadDef(modbusMaster, modbusMasterReception, osPriorityIdle, 0, 128);
+  modbusMasterHandle = osThreadCreate(osThread(modbusMaster), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -291,25 +297,46 @@ void StartDefaultTask(void const * argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_modbusMaster */
+/* USER CODE BEGIN Header_modbusMasterSend */
 /**
 * @brief Function implementing the modbusMastertas thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_modbusMaster */
-
-uint8_t buffer[8];
-
-void modbusMaster(void const * argument)
+/* USER CODE END Header_modbusMasterSend */
+void modbusMasterSend(void const * argument)
 {
-
-	for (int i = 0; i < 8; i++){
-		HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
-		osDelay(1);
+  /* USER CODE BEGIN modbusMasterSend */
+  /* Infinite loop */
+	if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
+		for (int i = 0; i < 8; i++){
+			HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
+			osDelay(1);
+		}
+		osDelay(4);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
 	}
-	osDelay(4);
-   /* USER CODE END modbusMaster */
+
+  /* USER CODE END modbusMasterSend */
+}
+
+/* USER CODE BEGIN Header_modbusMasterReception */
+/**
+* @brief Function implementing the modbusMaster thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_modbusMasterReception */
+void modbusMasterReception(void const * argument)
+{
+  /* USER CODE BEGIN modbusMasterReception */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END modbusMasterReception */
 }
 
 /**

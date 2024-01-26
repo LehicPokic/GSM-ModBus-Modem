@@ -263,6 +263,7 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
@@ -270,6 +271,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : LED_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -308,6 +319,7 @@ void modbusMasterSend(void const * argument)
 {
   /* USER CODE BEGIN modbusMasterSend */
   /* Infinite loop */
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 	if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
 		for (int i = 0; i < 8; i++){
 			HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
@@ -316,6 +328,8 @@ void modbusMasterSend(void const * argument)
 		osDelay(4);
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		osDelay(500);
 	}
 
   /* USER CODE END modbusMasterSend */
@@ -332,10 +346,15 @@ void modbusMasterReception(void const * argument)
 {
   /* USER CODE BEGIN modbusMasterReception */
   /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
+		for (int i = 0; i < 8; i++){
+			HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
+			osDelay(1);
+		}
+		osDelay(4);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+	}
   /* USER CODE END modbusMasterReception */
 }
 

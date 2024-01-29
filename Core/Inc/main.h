@@ -48,7 +48,7 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
-
+void sim800_Init(UART_HandleTypeDef *huart);
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 

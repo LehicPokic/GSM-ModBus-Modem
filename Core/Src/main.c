@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-
+#include "stm32f1xx_hal_conf.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -59,11 +59,12 @@ static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void const * argument);
 void modbusMasterSend(void const * argument);
 void modbusMasterReception(void const * argument);
-
+//void sim800_Init(UART_HandleTypeDef *huart);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
-
+uint8_t buffer[] = {0x6E, 0x03, 0x14, 0x10, 0x00, 0x01, 0x89, 0x60};
+uint8_t receiveBuffer[11];
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
@@ -99,6 +100,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  //sim800_Init(&huart2);
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -206,12 +208,12 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.StopBits = UART_STOPBITS_2;
   huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_RTS_CTS;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart1) != HAL_OK)
   {
@@ -222,7 +224,6 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE END USART1_Init 2 */
 
 }
-
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -271,9 +272,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_Pin */
   GPIO_InitStruct.Pin = LED_Pin;
@@ -281,6 +289,21 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA5 PA6 PA7 PA11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
+
+  /*Configure GPIO pin : PB12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -297,6 +320,31 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
+
+/*void sim800_Init(UART_HandleTypeDef *huart){
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CPIN?", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CSQ", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CREG?", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CGATT?", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CIPMODE=0", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CIPMUX=0", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CIPSTATUS", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CSTT=”inet.megafon.ru”", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CIICR", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CIPSTART=”TCP”,”212.17.25.235”,1080", 13, 5);
+	HAL_Delay(5);
+	HAL_UART_Transmit(&huart, (uint8_t*)"AT+CIPSEND=11", 13, 5);
+}*/
+
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
@@ -304,8 +352,11 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
 
-
-    osDelay(1);
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+	  osDelay(1000);
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+	  osDelay(1000);
+	  osDelay(1);
   }
   /* USER CODE END 5 */
 }
@@ -323,21 +374,34 @@ void modbusMasterSend(void const * argument)
   /* Infinite loop */
 	for(;;)
 	{
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-				osDelay(1000);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-				osDelay(1000);
-
+		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1){
+			osDelay(50);
+			for (int i = 0; i < 8; i++){
+				HAL_UART_Transmit(&huart1, &buffer[i], 1, 1);
+				osDelay(1);
+			}
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+			HAL_UART_Receive_IT(&huart1, receiveBuffer, 11);
+			osDelay(100);
+			HAL_UART_Transmit(&huart2, &receiveBuffer, 11, 5);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+			osDelay(1000);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+			osDelay(1000);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+			osDelay(1000);
+		}
 		osDelay(1);
 	}
-	/*if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == 0){
-		for (int i = 0; i < 8; i++){
-			HAL_UART_Transmit(&huart1, &buffer[i], 1, 30);
-			osDelay(1);
-		}
-		osDelay(4);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);*/
+	/*	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		osDelay(1000);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		osDelay(1000);
+
+
+	}*/
+
   /* USER CODE END modbusMasterSend */
 }
 
@@ -353,12 +417,10 @@ void modbusMasterReception(void const * argument)
   /* USER CODE BEGIN modbusMasterReception */
   /* Infinite loop */
 	for(;;)
-		{
+	{
 
-
-
-			osDelay(1);
-		}
+		osDelay(1);
+	}
   /* USER CODE END modbusMasterReception */
 }
 
